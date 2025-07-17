@@ -1178,3 +1178,20 @@ body {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
+     .modal-backdrop {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 2000;
+                }
+                .modal-content {
+                    width: 90%;
+                    max-width: 500px;
+                    padding: var(--spacing-xl);
+                }
