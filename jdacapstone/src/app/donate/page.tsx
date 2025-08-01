@@ -1,34 +1,48 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
+import { useSession } from 'next-auth/react';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 interface DonationFormData {
-    donorName: string;
     foodType: string;
     quantity: string;
     expiryDate: string;
-    pickupTime: string;
     address: string;
-    notes: string;
 }
 
 export default function DonatePage() {
+    const { data: session, status } = useSession();
+    const router = useRouter();
+    const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState<DonationFormData>({
-        donorName: '',
         foodType: '',
         quantity: '',
         expiryDate: '',
-        pickupTime: '',
         address: '',
-        notes: ''
     });
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log('Donation Submitted:', formData);
-        alert('Thank you for your donation!');
-        e.currentTarget.reset();
-        setFormData({ donorName: '', foodType: '', quantity: '', expiryDate: '', pickupTime: '', address: '', notes: '' });
+        setIsLoading(true);
+
+        const promise = fetch('/api/donations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData),
+        });
+
+        toast.promise(promise, {
+            loading: 'Mengirim donasi Anda...',
+            success: (res) => {
+                if (!res.ok) throw new Error('Gagal mengirim donasi.');
+                setFormData({ foodType: '', quantity: '', expiryDate: '', address: '' });
+                return 'Donasi berhasil dikirim! Terima kasih.';
+            },
+            error: 'Gagal mengirim donasi. Silakan coba lagi.',
+            finally: () => setIsLoading(false),
+        });
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -36,63 +50,72 @@ export default function DonatePage() {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    if (status === 'loading') {
+        return <div className="container text-center py-12">Memuat...</div>;
+    }
+
+    if (status === 'unauthenticated') {
+        return (
+            <div className="container text-center py-12">
+                <h2 className="text-2xl font-bold mb-4">Akses Ditolak</h2>
+                <p className="mb-6">Anda harus login terlebih dahulu untuk dapat melakukan donasi.</p>
+                <button onClick={() => router.push('/login')} className="btn btn-primary glass-btn">
+                    Login Sekarang
+                </button>
+            </div>
+        );
+    }
+
     return (
-    <div className="container">
+        <div className="container">
             <div className="page-header">
                 <h1>Donate Food</h1>
-                <p>Help us reduce food waste and feed communities in need</p>
+                <p>Bantu kami mengurangi limbah makanan dan memberi makan masyarakat</p>
             </div>
-
             <div className="donate-content">
-                <div className="donate-form-section">
-                    <div className="form-container glass-card">
-                        <h2>Food Donation Form</h2>
-                        <form id="donation-form" className="donation-form" onSubmit={handleSubmit}>
-                            <div className="form-group">
-                                <label htmlFor="donorName" className="form-label">Donor Name/Organization</label>
-                                <input type="text" id="donorName" name="donorName" value={formData.donorName} className="form-control" required onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="foodType" className="form-label">Food Type</label>
-                                <select id="foodType" name="foodType" value={formData.foodType} className="form-control" required onChange={handleChange}>
-                                    <option value="">Select food type</option>
-                                    <option value="fresh-produce">Fresh Produce</option>
-                                    <option value="prepared-meals">Prepared Meals</option>
-                                    <option value="packaged-goods">Packaged Goods</option>
-                                    <option value="dairy">Dairy Products</option>
-                                    <option value="bakery">Bakery Items</option>
-                                </select>
-                            </div>
-                            <div className="form-group"><label htmlFor="quantity" className="form-label">Quantity</label><input type="text" id="quantity" name="quantity" value={formData.quantity} className="form-control" placeholder="e.g., 25 lbs, 50 portions" required onChange={handleChange} /></div>
-                            <div className="form-group"><label htmlFor="expiryDate" className="form-label">Expiry Date</label><input type="date" id="expiryDate" name="expiryDate" value={formData.expiryDate} className="form-control" required onChange={handleChange} /></div>
-                            <div className="form-group"><label htmlFor="pickupTime" className="form-label">Preferred Pickup Time</label><select id="pickupTime" name="pickupTime" value={formData.pickupTime} className="form-control" required onChange={handleChange}><option value="">Select time</option><option value="morning">Morning (8AM - 12PM)</option><option value="afternoon">Afternoon (12PM - 5PM)</option><option value="evening">Evening (5PM - 8PM)</option></select></div>
-                            <div className="form-group"><label htmlFor="address" className="form-label">Pickup Address</label><textarea id="address" name="address" value={formData.address} className="form-control" rows={3} required onChange={handleChange}></textarea></div>
-                            <div className="form-group"><label htmlFor="notes" className="form-label">Additional Notes</label><textarea id="notes" name="notes" value={formData.notes} className="form-control" rows={2} onChange={handleChange}></textarea></div>
-                            <button type="submit" className="btn btn-primary glass-btn"><span>Submit Donation</span><div className="btn-glow"></div></button>
-                        </form>
-                    </div>
-
-        
+                <div className="form-container glass-card">
+                    <h2>Formulir Donasi Makanan</h2>
+                    <form id="donation-form" className="donation-form" onSubmit={handleSubmit}>
+                        <div className="form-group">
+                            <label htmlFor="foodType" className="form-label">Jenis Makanan</label>
+                            <select id="foodType" name="foodType" value={formData.foodType} className="form-control" required onChange={handleChange} disabled={isLoading}>
+                                <option value="">Pilih jenis makanan</option>
+                                <option value="Sayur & Buah">Sayur & Buah</option>
+                                <option value="Makanan Siap Saji">Makanan Siap Saji</option>
+                                <option value="Produk Kemasan">Produk Kemasan</option>
+                                <option value="Susu & Olahannya">Susu & Olahannya</option>
+                                <option value="Roti & Kue">Roti & Kue</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="quantity" className="form-label">Kuantitas (misal: kg, porsi, kotak)</label>
+                            <input type="text" id="quantity" name="quantity" value={formData.quantity} className="form-control" placeholder="Contoh: 10 kg" required onChange={handleChange} disabled={isLoading} />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="expiryDate" className="form-label">Tanggal Kedaluwarsa</label>
+                            <input type="date" id="expiryDate" name="expiryDate" value={formData.expiryDate} className="form-control" required onChange={handleChange} disabled={isLoading} />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="address" className="form-label">Alamat Lengkap Penjemputan</label>
+                            <textarea id="address" name="address" value={formData.address} className="form-control" rows={3} required onChange={handleChange} disabled={isLoading}></textarea>
+                        </div>
+                        <button type="submit" className="btn btn-primary glass-btn w-full" disabled={isLoading}>
+                            <span>{isLoading ? 'Memproses...' : 'Kirim Donasi'}</span>
+                            <div className="btn-glow"></div>
+                        </button>
+                    </form>
                 </div>
                 <div className="donation-info">
                     <div className="info-card glass-card">
-                        <h3>Food Safety Guidelines</h3>
+                        <h3>Panduan Keamanan Pangan</h3>
                         <ul>
-                            <li>Food should be within expiry date</li>
-                            <li>Prepared meals should be properly stored</li>
-                            <li>Fresh produce should be in good condition</li>
-                            <li>Packaged goods should be unopened</li>
+                            <li>Makanan harus dalam tanggal kedaluwarsa</li>
+                            <li>Makanan siap saji harus disimpan dengan benar</li>
+                            <li>Produk kemasan harus belum dibuka</li>
                         </ul>
-                    </div>
-                    <div className="info-card glass-card">
-                        <h3>Donation Impact</h3>
-                        <p>Your donation will help:</p>
-                        <ul><li>Feed families in need</li><li>Reduce food waste</li><li>Lower carbon emissions</li><li>Support local communities</li></ul>
                     </div>
                 </div>
             </div>
         </div>
     );
 }
-
-        

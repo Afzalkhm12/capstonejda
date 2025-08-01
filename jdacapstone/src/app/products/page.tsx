@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link'; 
 
 interface Product {
     id: number;
@@ -68,21 +69,20 @@ export default function ProductsPage() {
 
             <div className="products-grid" id="products-grid">
                 {filteredProducts.map(product => (
-                    <div key={product.id} className="product-card glass-card">
-                        <Image 
-                            src={product.image} 
-                            alt={product.name} 
-                            width={300} 
-                            height={300} 
-                            style={{ objectFit: 'cover', width: '100%', height: 'auto', aspectRatio: '1 / 1' }} 
+                    <Link href={`/products/${product.id}`} key={product.id} className="product-card glass-card no-underline">
+                        <Image
+                            src={product.image}
+                            alt={product.name}
+                            width={300}
+                            height={300}
+                            style={{ objectFit: 'cover', width: '100%', height: 'auto', aspectRatio: '1 / 1' }}
                             onError={(e) => { e.currentTarget.src = 'https://placehold.co/300x300/e8f5e8/1a3b1a?text=Gambar+Rusak'; }}
                         />
                         <div className="card-body">
-                            <h3>{product.name}</h3>
+                            <h3 className="text-lg font-semibold">{product.name}</h3>
                             <p className="product-price">Rp{product.price.toLocaleString('id-ID')}</p>
-                            {/* Tombol admin dihapus dari sini */}
                         </div>
-                    </div>
+                    </Link>
                 ))}
             </div>
         </div>

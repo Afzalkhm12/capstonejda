@@ -1,21 +1,12 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth/next";
-// Pastikan path impor ini benar
 import { authOptions } from "@/app/api/[...nextauth]/route";
+import { sendDonationConfirmationEmail, sendDonationNotificationEmail } from '@/lib/mail';
 
 export async function GET() {
-  // getServerSession sekarang akan mengembalikan tipe Session yang sudah kita definisikan
-  const session = await getServerSession(authOptions as any);
+  const session = await getServerSession(authOptions);
 
-  // --- PENJELASAN ERROR ---
-  // Jika Anda masih melihat error "Property 'user' does not exist" di baris bawah ini,
-  // itu karena editor Anda belum memuat ulang definisi tipe dari 'next-auth.d.ts'.
-  //
-  // SOLUSI:
-  // 1. Buka Command Palette di VS Code (Ctrl+Shift+P atau Cmd+Shift+P).
-  // 2. Ketik "TypeScript: Restart TS server" dan tekan Enter.
-  // 3. Error seharusnya akan hilang setelah beberapa detik.
   if (!session?.user?.id) {
     return new NextResponse(JSON.stringify({ message: 'Unauthorized' }), { status: 401 });
   }
@@ -33,20 +24,17 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = await getServerSession(authOptions as any);
+  const session = await getServerSession(authOptions);
 
-  if (!session?.user?.id) {
+  if (!session?.user?.id || !session?.user?.email) {
     return new NextResponse(JSON.stringify({ message: 'Unauthorized' }), { status: 401 });
   }
   
   try {
     const data = await request.json();
-    
-    // Validasi data yang masuk
     if (!data.foodType || !data.quantity || !data.expiryDate || !data.address) {
         return new NextResponse(JSON.stringify({ message: 'Data yang dibutuhkan tidak lengkap' }), { status: 400 });
     }
-
     const newDonation = await prisma.donation.create({
       data: {
         foodType: data.foodType,
@@ -56,6 +44,8 @@ export async function POST(request: Request) {
         userId: session.user.id,
       },
     });
+    await sendDonationConfirmationEmail(session.user.email, session.user.name || 'Donatur', newDonation);
+    await sendDonationNotificationEmail('afzalkhm1203@gmail.com', newDonation, session.user);
     return new NextResponse(JSON.stringify(newDonation), { status: 201 });
   } catch (error) {
     console.error("Gagal membuat donasi:", error);

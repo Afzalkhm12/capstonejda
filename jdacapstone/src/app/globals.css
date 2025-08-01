@@ -1309,3 +1309,29 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@media (max-width: 768px) {
+  .nav-menu {
+    position: fixed;
+    top: 65px; /* Sesuaikan dengan tinggi navbar Anda */
+    right: 0;
+    width: 100%;
+    height: calc(100vh - 65px);
+    background: var(--color-background);
+    flex-direction: column;
+    align-items: center;
+    padding: var(--spacing-2xl) var(--spacing-lg);
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    gap: var(--spacing-2xl); /* Jarak antar menu item di mobile */
+  }
+
+  /* Menggunakan .active agar sesuai dengan state di Navbar.tsx */
+  .nav-menu.active {
+    transform: translateX(0);
+  }
+
+  .nav-toggle {
+    display: flex;
+  }
+}

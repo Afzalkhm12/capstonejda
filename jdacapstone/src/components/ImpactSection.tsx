@@ -1,18 +1,53 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
+interface ImpactStats {
+    totalDonations: number;
+    mealsProvided: number;
+    co2Saved: number;
+}
 
 export default function ImpactSection() {
+    const [stats, setStats] = useState<ImpactStats | null>(null);
+
     useEffect(() => {
-        const progressBars = document.querySelectorAll('.progress-bar');
-        progressBars.forEach(bar => {
-            if (bar instanceof HTMLElement) {
-                const progress = bar.dataset.progress || '0';
-                bar.style.width = `${progress}%`;
+        async function fetchImpactStats() {
+            try {
+                const res = await fetch('/api/impact-stats');
+                const data = await res.json();
+                setStats(data);
+            } catch (error) {
+                console.error('Gagal memuat statistik:', error);
+            }
+        }
+        fetchImpactStats();
+    }, []);
+    useEffect(() => {
+        if (!stats) return;
+
+        const counters = document.querySelectorAll('.stat-number');
+        const speed = 200;
+
+        counters.forEach(counter => {
+            if (counter instanceof HTMLElement) {
+                const target = Number(counter.dataset.count) || 0;
+                let count = 0;
+                const inc = target / speed;
+
+                const updateCount = () => {
+                    if (count < target) {
+                        count += inc;
+                        counter.innerText = Math.ceil(count).toLocaleString('id-ID');
+                        setTimeout(updateCount, 1);
+                    } else {
+                        counter.innerText = target.toLocaleString('id-ID');
+                    }
+                };
+                updateCount();
             }
         });
-    }, []);
+    }, [stats]);
 
     return (
         <section className="impact-section">
@@ -21,21 +56,18 @@ export default function ImpactSection() {
                 <div className="impact-grid">
                     <div className="impact-card glass-card">
                         <div className="impact-icon">🍽️</div>
-                        <h3>3,750</h3>
+                        <h3 className="stat-number" data-count={stats?.mealsProvided || 0}>0</h3>
                         <p>Meals Provided</p>
-                        <div className="impact-bar"><div className="progress-bar" data-progress="85"></div></div>
                     </div>
                     <div className="impact-card glass-card">
                         <div className="impact-icon">🌍</div>
-                        <h3>2.5 tons</h3>
-                        <p>CO2 Saved</p>
-                        <div className="impact-bar"><div className="progress-bar" data-progress="70"></div></div>
+                        <h3 className="stat-number" data-count={stats?.co2Saved || 0}>0</h3>
+                        <p>Kg CO2 Saved</p>
                     </div>
                     <div className="impact-card glass-card">
                         <div className="impact-icon">♻️</div>
-                        <h3>15,000 lbs</h3>
-                        <p>Waste Reduced</p>
-                        <div className="impact-bar"><div className="progress-bar" data-progress="92"></div></div>
+                        <h3 className="stat-number" data-count={stats?.totalDonations || 0}>0</h3>
+                        <p>Food Rescued</p>
                     </div>
                 </div>
             </div>

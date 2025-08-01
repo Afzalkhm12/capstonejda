@@ -1,14 +1,11 @@
 'use client';
 
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, FormEvent, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import AuthLayout from '@/components/AuthLayout';
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -51,46 +48,52 @@ export default function ResetPasswordPage() {
   };
 
   if (!token) {
-    return <div className="container text-center py-12">Token tidak ditemukan...</div>;
+    return <div className="text-center text-text-secondary">Token tidak ditemukan...</div>;
   }
 
   return (
-    <div className="container flex items-center justify-center min-h-screen py-12">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle>Reset Password</CardTitle>
-          <CardDescription>Masukkan password baru Anda.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password Baru</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="confirmPassword">Konfirmasi Password Baru</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={isLoading}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Memproses...' : 'Reset Password'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+    <AuthLayout
+      title="Reset Password"
+      description="Masukkan password baru Anda."
+    >
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="form-group">
+          <label htmlFor="password" className="form-label">Password Baru</label>
+          <input
+            id="password"
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="form-control"
+            disabled={isLoading}
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="confirmPassword" className="form-label">Konfirmasi Password Baru</label>
+          <input
+            id="confirmPassword"
+            type="password"
+            required
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="form-control"
+            disabled={isLoading}
+          />
+        </div>
+        <button type="submit" className="btn btn-primary glass-btn w-full" disabled={isLoading}>
+          <span>{isLoading ? 'Memproses...' : 'Reset Password'}</span>
+          <div className="btn-glow"></div>
+        </button>
+      </form>
+    </AuthLayout>
   );
+}
+
+export default function ResetPasswordPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ResetPasswordForm />
+        </Suspense>
+    )
 }

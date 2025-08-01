@@ -1,17 +1,30 @@
-import { withAuth } from "next-auth/middleware"
+import { withAuth, NextRequestWithAuth } from "next-auth/middleware";
+import { NextResponse } from "next/server";
 
-export default withAuth({
-  pages: {
-    signIn: "/login", // Arahkan pengguna ke halaman login kustom Anda
+export default withAuth(
+  function middleware(request: NextRequestWithAuth) {
+    const { token } = request.nextauth;
+    const { pathname } = request.nextUrl;
+
+    if (pathname.startsWith("/admin")) {
+      if (!token || token.role !== "admin") {
+        return NextResponse.redirect(new URL("/", request.url));
+      }
+    }
   },
-});
-
-// Konfigurasi ini menentukan halaman mana yang akan dilindungi
-export const config = { 
+  {
+    callbacks: {
+      authorized: ({ token }) => !!token,
+    },
+    pages: {
+      signIn: "/login",
+    },
+  }
+);
+export const config = {
   matcher: [
-    "/products",     // <-- DILINDUNGI
-    "/profile",      // <-- DILINDUNGI
-    "/my-donations", // Melindungi halaman donasi
-    "/admin/:path*", // Melindungi semua halaman di bawah /admin
-  ] 
+    "/profile",
+    "/my-donations",
+    "/admin/:path*",
+  ],
 };

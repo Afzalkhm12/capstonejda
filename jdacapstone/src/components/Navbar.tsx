@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
+import { usePathname, useRouter } from 'next/navigation'; 
 import { Button } from './ui/button';
 import {
   DropdownMenu,
@@ -17,6 +18,15 @@ import {
 export default function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { data: session, status } = useSession();
+    const router = useRouter();
+    const pathname = usePathname();
+
+    useEffect(() => {
+        if (status === 'authenticated' && session?.user?.role === 'admin' && !pathname.startsWith('/admin')) {
+            router.push('/admin/dashboard');
+        }
+    }, [status, session, pathname, router]);
+
 
     const closeMenu = () => setIsMenuOpen(false);
 
@@ -38,10 +48,9 @@ export default function Navbar() {
                     <li><Link href="/contact" className="nav-link" onClick={closeMenu}>Contact</Link></li>
                 </ul>
 
-                {/* --- LOGIKA AUTENTIKASI DITAMBAHKAN DI SINI --- */}
                 <div className="nav-actions">
                     {status === 'loading' ? (
-                        <div className="w-20 h-10 bg-gray-200/50 rounded-md animate-pulse"></div>
+                        <div className="w-10 h-10 bg-gray-200/50 rounded-full animate-pulse"></div>
                     ) : status === 'authenticated' ? (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -62,6 +71,9 @@ export default function Navbar() {
                                     </div>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
+                                {session.user.role === 'admin' && (
+                                   <DropdownMenuItem asChild><Link href="/admin/dashboard">Dashboard</Link></DropdownMenuItem>
+                                )}
                                 <DropdownMenuItem asChild><Link href="/profile">Profile</Link></DropdownMenuItem>
                                 <DropdownMenuItem asChild><Link href="/my-donations">My Donations</Link></DropdownMenuItem>
                                 <DropdownMenuSeparator />
@@ -76,7 +88,6 @@ export default function Navbar() {
                         </Button>
                     )}
                 </div>
-                {/* ----------------------------------------------- */}
 
                 <div className="nav-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
                     <span></span>
