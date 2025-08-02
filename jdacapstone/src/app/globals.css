@@ -1334,4 +1334,53 @@ body {
   .nav-toggle {
     display: flex;
   }
+  /* Styling Baru untuk Admin Dashboard */
+:root {
+  --chart-1: hsl(120, 70%, 40%);
+  --chart-2: hsl(40, 80%, 50%);
+}
+
+.dark {
+  --chart-1: hsl(120, 70%, 50%);
+  --chart-2: hsl(40, 80%, 60%);
+}
+
+.admin-dashboard-container {
+  padding: 1.5rem;
+  background-color: #f7f9fc; /* Latar belakang abu-abu sangat muda */
+}
+
+.dark .admin-dashboard-container {
+  background-color: #111827; /* Latar belakang gelap */
+}
+
+.dashboard-card {
+  background-color: var(--card); /* Menggunakan warna kartu dari ShadCN */
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.dashboard-card .card-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.tooltip-wrapper {
+  background-color: var(--popover) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  color: var(--popover-foreground) !important;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+/* Custom Admin Styles */
+.admin-dashboard-container {
+  @apply p-4 sm:p-6 lg:p-8 space-y-6;
+}
+
+.tooltip-wrapper {
+  @apply !bg-popover !border-border !rounded-lg !shadow-lg;
+}
+
+
 }

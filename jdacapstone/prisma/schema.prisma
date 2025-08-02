@@ -18,6 +18,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   donations     Donation[]
+  createdAt DateTime @default(now())
 }
 
 model Admin {

@@ -1,48 +1,46 @@
-import { AuthOptions } from "next-auth";
-import { PrismaAdapter } from "@auth/prisma-adapter";
+import { NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
-export const authOptions: AuthOptions = {
-  adapter: PrismaAdapter(prisma),
+export const authConfig = {
   providers: [
     CredentialsProvider({
-      name: "credentials",
-      credentials: {
-        email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" },
-      },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email dan password harus diisi.");
+          return null;
         }
-        
         const { email, password } = credentials;
 
-        const admin = await prisma.admin.findUnique({ where: { email } });
+        const admin = await prisma.admin.findUnique({ where: { email: email as string } });
         if (admin) {
-          const isPasswordCorrect = await bcrypt.compare(password, admin.password);
+          const isPasswordCorrect = await bcrypt.compare(password as string, admin.password);
           if (isPasswordCorrect) {
             return { id: admin.id, email: admin.email, name: admin.name, role: 'admin' };
           }
         }
 
-        const user = await prisma.user.findUnique({ where: { email } });
-        if (user) {
-          if (!user.password) throw new Error("Kredensial tidak valid.");
-          if (!user.emailVerified) throw new Error("Akun Anda belum diverifikasi. Silakan cek email Anda.");
-          
-          const isPasswordCorrect = await bcrypt.compare(password, user.password);
+        const user = await prisma.user.findUnique({ where: { email: email as string } });
+        if (user && user.password) {
+          if (!user.emailVerified) {
+            throw new Error("Akun Anda belum diverifikasi. Silakan cek email Anda.");
+          }
+          const isPasswordCorrect = await bcrypt.compare(password as string, user.password);
           if (isPasswordCorrect) {
             return { id: user.id, email: user.email, name: user.name, role: 'user' };
           }
         }
 
-        throw new Error("Kredensial tidak valid.");
+        return null;
       },
     }),
   ],
+  pages: {
+    signIn: "/login",
+  },
+  session: {
+    strategy: "jwt",
+  },
   callbacks: {
     jwt({ token, user }) {
       if (user) {
@@ -59,12 +57,4 @@ export const authOptions: AuthOptions = {
       return session;
     },
   },
-  session: {
-    strategy: "jwt",
-  },
-  secret: process.env.NEXTAUTH_SECRET,
-  pages: {
-    signIn: "/login",
-  },
-  debug: process.env.NODE_ENV === 'development',
-};
+} satisfies NextAuthConfig;

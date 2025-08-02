@@ -1,36 +1,47 @@
-import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
+import NextAuth from "next-auth";
+import { authConfig } from "@/lib/auth";
 
-export default withAuth(
-  function middleware(req) {
-    const { token } = req.nextauth;
-    const { pathname } = req.nextUrl;
+const { auth } = NextAuth(authConfig);
 
-    // Logika untuk melindungi rute admin
-    if (pathname.startsWith("/admin")) {
-      // Jika pengguna tidak login ATAU perannya bukan admin, alihkan
-      if (token?.role !== "admin") {
-        return NextResponse.redirect(new URL("/", req.url));
-      }
+export default auth((req) => {
+  const { nextUrl } = req;
+  const isLoggedIn = !!req.auth;
+  const userRole = req.auth?.user?.role;
+
+  const isProtectedUserRoute = 
+    nextUrl.pathname.startsWith('/profile') ||
+    nextUrl.pathname.startsWith('/my-donations') ||
+    nextUrl.pathname.startsWith('/donate');
+  
+  const isAdminRoute = nextUrl.pathname.startsWith('/admin');
+  
+  // Jika mencoba mengakses rute admin
+  if (isAdminRoute) {
+    if (!isLoggedIn || userRole !== 'admin') {
+      // Arahkan ke halaman utama jika bukan admin
+      return Response.redirect(new URL('/', nextUrl));
     }
-  },
-  {
-    callbacks: {
-      // Pengguna harus login (memiliki token) untuk mengakses halaman yang cocok
-      authorized: ({ token }) => !!token,
-    },
-    pages: {
-      // Arahkan ke halaman login kustom jika tidak terotentikasi
-      signIn: "/login",
-    },
+    // Jika admin, izinkan akses
+    return;
   }
-);
+  
+  // Jika mencoba mengakses rute pengguna yang dilindungi
+  if (isProtectedUserRoute && !isLoggedIn) {
+     const loginUrl = new URL("/login", nextUrl.origin);
+     loginUrl.searchParams.set("callbackUrl", nextUrl.pathname);
+     return Response.redirect(loginUrl);
+  }
 
-// Konfigurasi ini menentukan halaman mana yang akan dilindungi
+  // Izinkan semua permintaan lainnya
+  return;
+});
+
 export const config = {
+  // Middleware akan berjalan di rute-rute ini
   matcher: [
     "/profile",
     "/my-donations",
-    "/admin/:path*", // Melindungi semua rute di bawah /admin
+    "/donate",
+    "/admin/:path*",
   ],
 };
