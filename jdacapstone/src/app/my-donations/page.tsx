@@ -2,18 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 interface Donation {
   id: number;
@@ -25,7 +15,7 @@ interface Donation {
 }
 
 export default function MyDonationsPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [donations, setDonations] = useState<Donation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -52,7 +42,6 @@ export default function MyDonationsPage() {
     <div className="container py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">My Donations</h1>
-        {/* Add Donation Dialog/Button would go here */}
       </div>
       <Card>
         <CardContent>
@@ -75,14 +64,13 @@ export default function MyDonationsPage() {
                     <TableCell>{new Date(donation.expiryDate).toLocaleDateString()}</TableCell>
                     <TableCell>{donation.status}</TableCell>
                     <TableCell>
-                      {/* Edit and Delete buttons would go here */}
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center">
-                    You haven't made any donations yet.
+                    You haven&apos;t made any donations yet.
                   </TableCell>
                 </TableRow>
               )}

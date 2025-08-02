@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 
 const smtpOptions = {
-  host: process.env.EMAIL_SERVER_HOST,
+  host: process.env.EMAIL_SERVER_HOST || 'smtp.gmail.com',
   port: parseInt(process.env.EMAIL_SERVER_PORT || '465'),
   secure: true, 
   auth: {
@@ -11,6 +11,18 @@ const smtpOptions = {
 };
 
 const transporter = nodemailer.createTransport(smtpOptions);
+
+interface DonationDetails {
+  foodType: string;
+  quantity: string;
+  address: string;
+  expiryDate: Date;
+}
+
+interface UserDetails {
+  name?: string | null;
+  email?: string | null;
+}
 
 export const sendVerificationEmail = async (email: string, token: string) => {
   const verificationLink = `${process.env.NEXTAUTH_URL}/api/auth/verify?token=${token}`;
@@ -45,7 +57,8 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
   });
 };
 
-export const sendDonationConfirmationEmail = async (userEmail: string, userName: string, donationDetails: any) => {
+
+export const sendDonationConfirmationEmail = async (userEmail: string, userName: string, donationDetails: DonationDetails) => {
   const mealsProvided = (parseInt(donationDetails.quantity) || 1) * 15;
   const co2Saved = (parseInt(donationDetails.quantity) || 1) * 2.5;
 
@@ -74,7 +87,8 @@ export const sendDonationConfirmationEmail = async (userEmail: string, userName:
   });
 };
 
-export const sendDonationNotificationEmail = async (adminEmail: string, donationDetails: any, user: any) => {
+
+export const sendDonationNotificationEmail = async (adminEmail: string, donationDetails: DonationDetails, user: UserDetails) => {
   const emailHtml = `
     <div style="font-family: Arial, sans-serif; line-height: 1.6;">
       <h2>Donasi Baru Masuk!</h2>

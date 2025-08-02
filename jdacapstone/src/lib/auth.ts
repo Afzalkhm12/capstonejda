@@ -1,10 +1,11 @@
-import NextAuth, { AuthOptions } from "next-auth";
+import { AuthOptions } from "next-auth";
+import { PrismaAdapter } from "@auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 export const authOptions: AuthOptions = {
-  // adapter: PrismaAdapter(prisma), // <-- REMOVE THIS LINE
+  adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -16,10 +17,9 @@ export const authOptions: AuthOptions = {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Email dan password harus diisi.");
         }
-
+        
         const { email, password } = credentials;
 
-        // Check for admin
         const admin = await prisma.admin.findUnique({ where: { email } });
         if (admin) {
           const isPasswordCorrect = await bcrypt.compare(password, admin.password);
@@ -28,15 +28,10 @@ export const authOptions: AuthOptions = {
           }
         }
 
-        // Check for user
         const user = await prisma.user.findUnique({ where: { email } });
         if (user) {
-          if (!user.password) {
-            throw new Error("Kredensial tidak valid.");
-          }
-          if (!user.emailVerified) {
-            throw new Error("Akun Anda belum diverifikasi. Silakan cek email Anda.");
-          }
+          if (!user.password) throw new Error("Kredensial tidak valid.");
+          if (!user.emailVerified) throw new Error("Akun Anda belum diverifikasi. Silakan cek email Anda.");
           
           const isPasswordCorrect = await bcrypt.compare(password, user.password);
           if (isPasswordCorrect) {
@@ -73,7 +68,3 @@ export const authOptions: AuthOptions = {
   },
   debug: process.env.NODE_ENV === 'development',
 };
-
-const handler = NextAuth(authOptions);
-
-export { handler as GET, handler as POST };

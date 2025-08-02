@@ -1,3 +1,4 @@
+import * as React from 'react';
 import Link from 'next/link'
 
 export default function NotFound() {
@@ -15,7 +16,7 @@ export default function NotFound() {
         
         <p className="text-gray-600 mb-8 max-w-md mx-auto">
           Just like food waste, this page seems to have disappeared. 
-          But don't worry, we can help you find what you're looking for!
+          But don&apos;t worry, we can help you find what you&apos;re looking for!
         </p>
         
         <div className="space-y-4">

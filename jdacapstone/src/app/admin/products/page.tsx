@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, FormEvent } from 'react';
-import Image from 'next/image';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -34,7 +33,8 @@ export default function AdminProductsPage() {
             } else {
                 toast.error("Gagal memuat produk.");
             }
-        } catch (error) {
+        } catch (error) { 
+            console.error("Terjadi kesalahan:", error);
             toast.error("Terjadi kesalahan saat memuat produk.");
         } finally {
             setIsLoading(false);

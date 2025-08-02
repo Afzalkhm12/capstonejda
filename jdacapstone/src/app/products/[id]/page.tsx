@@ -27,6 +27,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 const data: Product = await res.json();
                 setProduct(data);
             } catch (error) {
+                console.error("Fetch product detail error:", error);
                 toast.error("Gagal memuat detail produk.");
             } finally {
                 setIsLoading(false);

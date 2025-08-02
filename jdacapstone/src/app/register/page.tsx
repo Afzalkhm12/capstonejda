@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, FormEvent } from 'react';
@@ -12,6 +13,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -22,23 +24,16 @@ export default function RegisterPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password }),
       });
-
       const data = await res.json();
-
       if (res.ok) {
-        toast.success("Registrasi berhasil!", {
-          description: "Email verifikasi telah dikirim. Silakan cek kotak masuk Anda."
-        });
+        toast.success("Registrasi berhasil!", { description: "Email verifikasi telah dikirim. Silakan cek kotak masuk Anda." });
         router.push('/login');
       } else {
-        toast.error("Registrasi gagal.", {
-          description: data.message || "Silakan coba lagi.",
-        });
+        toast.error("Registrasi gagal.", { description: data.message || "Silakan coba lagi." });
       }
     } catch (error) {
-      toast.error("Terjadi kesalahan.", {
-        description: "Tidak dapat terhubung ke server.",
-      });
+      console.error("Register Error:", error); // Variabel 'error' digunakan
+      toast.error("Terjadi kesalahan.", { description: "Tidak dapat terhubung ke server." });
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +90,7 @@ export default function RegisterPage() {
       <div className="mt-6 text-center text-sm">
         <p className="text-text-secondary">
           Sudah punya akun?{' '}
-          <Link href="/login" className="font-medium text-blue hover:underline">
+          <Link href="/login" className="font-medium text-primary hover:underline">
             Login di sini
           </Link>
         </p>

@@ -13,7 +13,7 @@ interface DonationFormData {
 }
 
 export default function DonatePage() {
-    const { data: session, status } = useSession();
+    const { status } = useSession();
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState<DonationFormData>({

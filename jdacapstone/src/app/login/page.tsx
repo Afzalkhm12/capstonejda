@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { toast } from "sonner";
 import Link from 'next/link';
 import AuthLayout from '@/components/AuthLayout';
@@ -11,7 +11,6 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
 
@@ -35,6 +34,7 @@ export default function LoginPage() {
         });
       }
     } catch (error) {
+      console.error("Login Error:", error); // Variabel 'error' digunakan
       toast.error("Terjadi Kesalahan", {
         description: "Tidak dapat terhubung ke server.",
       });
