@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import NextAuth from 'next-auth';
-import { authConfig } from '@/lib/auth';
+import { auth } from '@/lib/auth';
 
-const { auth } = NextAuth(authConfig);
+export const runtime = 'nodejs';
 
 export const POST = auth(async (req) => {
   if (!req.auth?.user?.id) {

@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import NextAuth from 'next-auth'; 
-import { authConfig } from '@/lib/auth';
-export const runtime = 'nodejs';
+import { auth } from '@/lib/auth';
 
-const { auth } = NextAuth(authConfig);
+export const runtime = 'nodejs';
 
 export const GET = auth(async (req) => { 
   if (req.auth?.user?.role !== 'admin') {
@@ -17,8 +15,8 @@ export const GET = auth(async (req) => {
       include: { user: { select: { name: true, email: true } } },
     });
     return NextResponse.json(donations);
-  } catch {
-    console.error("Gagal mengambil data donasi");
+  } catch (error) {
+    console.error("Gagal mengambil data donasi:", error);
     return new NextResponse(JSON.stringify({ message: "Gagal mengambil data donasi" }), { status: 500 });
   }
 });

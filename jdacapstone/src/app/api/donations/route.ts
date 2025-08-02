@@ -1,15 +1,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import NextAuth from 'next-auth';
-import { authConfig } from '@/lib/auth'; // <-- Perbaikan: Impor authConfig
+import { auth } from '@/lib/auth';
 import { sendDonationConfirmationEmail, sendDonationNotificationEmail } from '@/lib/mail';
 
-// Gunakan auth helper dari NextAuth v5
-const { auth } = NextAuth(authConfig);
+export const runtime = 'nodejs';
 
-// Gunakan 'auth' untuk melindungi route
 export const GET = auth(async (req) => {
-  // Session tersedia di req.auth
   if (!req.auth?.user?.id) {
     return new NextResponse(JSON.stringify({ message: 'Unauthorized' }), { status: 401 });
   }
