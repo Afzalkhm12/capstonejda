@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Image from 'next/image';
-import { Loader2, Edit, KeyRound } from 'lucide-react';
+import { Loader2, Edit, KeyRound } from 'lucide-react'; 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -41,15 +41,15 @@ export default function ProfilePage() {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Gagal memperbarui profil.');
       }
-      await update({ name: newName });
+      await update({ user: { name: newName } });
       return { name: newName };
     });
 
     toast.promise(promise, {
       loading: 'Menyimpan perubahan...',
-      success: (data) => {
+      success: () => {
         setIsEditProfileOpen(false);
-        return `Profil berhasil diperbarui! Nama baru: ${data.name}`;
+        return 'Profil berhasil diperbarui!';
       },
       error: (err) => err.message,
       finally: () => setIsSubmitting(false),
@@ -97,11 +97,11 @@ export default function ProfilePage() {
     return <p className="container text-center py-12">Anda harus login untuk melihat halaman ini.</p>;
   }
 
+
   return (
-    // PERBAIKAN: Padding atas (pt) dihapus dari sini, hanya padding bawah (pb)
-    <div className="container pb-12">
-      <div className="max-w-4xl mx-auto space-y-8">
-        <Card className="glass-card">
+    <div className="bg-gray-50 dark:bg-gray-900/50 py-12 min-h-screen">
+      <div className="container max-w-4xl mx-auto space-y-8">
+        <Card className="shadow-sm">
           <CardHeader>
             <div className="flex items-center gap-6">
               <Image
@@ -113,7 +113,7 @@ export default function ProfilePage() {
               />
               <div>
                 <CardTitle className="text-2xl font-bold">{session.user?.name}</CardTitle>
-                <CardDescription className="text-base text-text-secondary mt-1">
+                <CardDescription className="text-base text-muted-foreground mt-1">
                   {session.user?.email}
                 </CardDescription>
               </div>
@@ -121,7 +121,7 @@ export default function ProfilePage() {
           </CardHeader>
         </Card>
         
-        <Card className="glass-card">
+        <Card className="shadow-sm">
             <CardHeader>
                 <CardTitle>Informasi Pribadi</CardTitle>
                 <CardDescription>Detail informasi pribadi Anda.</CardDescription>
@@ -156,7 +156,7 @@ export default function ProfilePage() {
             </CardContent>
         </Card>
 
-        <Card className="glass-card">
+        <Card className="shadow-sm">
             <CardHeader>
                 <CardTitle>Pengaturan Akun</CardTitle>
                 <CardDescription>Ubah password Anda.</CardDescription>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge"; 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -22,6 +22,7 @@ interface Donation {
   };
 }
 
+
 export default function AdminDonationsPage() {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,8 +35,8 @@ export default function AdminDonationsPage() {
         const data = await res.json();
         setDonations(data);
       }
-    } catch (err) { 
-      console.error('Gagal memuat data donasi:', err);
+    } catch (error) {
+      console.error('Gagal memuat data donasi:', error);
       toast.error('Gagal memuat data donasi.');
     } finally {
       setIsLoading(false);
@@ -47,6 +48,7 @@ export default function AdminDonationsPage() {
   }, []);
 
   const handleStatusChange = async (id: number, status: string) => {
+    // ... (kode handleStatusChange tetap sama) ...
     const promise = fetch(`/api/admin/donations/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -65,7 +67,6 @@ export default function AdminDonationsPage() {
       error: (err) => err.message,
     });
   };
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-full">
