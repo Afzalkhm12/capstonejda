@@ -2,18 +2,23 @@ import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import NextAuth from 'next-auth';
 import { authConfig } from "@/lib/auth";
-export const runtime = 'nodejs'; 
+export const runtime = 'nodejs';
 
 const { auth } = NextAuth(authConfig);
-async function handlePatch(req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await auth(); 
+interface RouteContext {
+  params: {
+    id: string;
+  };
+}
+async function handlePatch(req: NextRequest, context: RouteContext) {
+  const session = await auth();
   if (session?.user?.role !== 'admin') {
     return new NextResponse(JSON.stringify({ message: 'Unauthorized' }), { status: 401 });
   }
 
   try {
     const { status } = await req.json();
-    const donationId = parseInt(params.id, 10);
+    const donationId = parseInt(context.params.id, 10);
 
     if (isNaN(donationId)) {
         return new NextResponse(JSON.stringify({ message: 'Invalid donation ID' }), { status: 400 });
