@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from 'next-auth';
+import { User } from 'next-auth'; // Impor tipe User
 
 export const authConfig = {
   pages: {
@@ -19,7 +20,7 @@ export const authConfig = {
         nextUrl.pathname.startsWith('/donate');
 
       if (isProtectedRoute) {
-        if (!isLoggedIn) return false; 
+        if (!isLoggedIn) return false;
         if (isAdminRoute && userRole !== 'admin') {
           return Response.redirect(new URL('/', nextUrl));
         }
@@ -29,7 +30,7 @@ export const authConfig = {
     jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role;
+        token.role = (user as User).role;
       }
       return token;
     },
