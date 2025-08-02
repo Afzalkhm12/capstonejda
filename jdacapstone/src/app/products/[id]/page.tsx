@@ -1,11 +1,14 @@
 import prisma from '@/lib/prisma';
 import { notFound } from 'next/navigation';
-import ProductOrderClient from './ProductOrderClient';
+import ProductOrderClient from './ProductOrderClient'; 
+interface ProductDetailPageProps {
+  params: Promise<{ id: string }>; 
+}
 
+export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
+    const { id: paramId } = await params;
+    const id = parseInt(paramId, 10);
 
-
-export default async function ProductDetailPage({ params }: { params: { id: string } }) {
-    const id = parseInt(params.id, 10);
     if (isNaN(id)) {
         notFound();
     }
@@ -17,6 +20,5 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
     if (!product) {
         notFound();
     }
-
     return <ProductOrderClient product={product} />;
 }

@@ -4,15 +4,16 @@ import { auth } from '@/lib/auth';
 export const runtime = 'nodejs';
 export async function PUT(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     const session = await auth();
 
     if (!session?.user?.id) {
         return new NextResponse(JSON.stringify({ message: 'Unauthorized' }), { status: 401 });
     }
-
-    const donationId = parseInt(params.id, 10);
+    const { id } = await params;
+    const donationId = parseInt(id, 10);
+    
     if (isNaN(donationId)) {
         return new NextResponse(JSON.stringify({ message: 'Invalid donation ID' }), { status: 400 });
     }
@@ -35,7 +36,7 @@ export async function PUT(
                 quantity: data.quantity,
                 expiryDate: new Date(data.expiryDate),
                 address: data.address,
-                status: data.status,
+                status: data.status, 
             },
         });
         return NextResponse.json(updatedDonation);
@@ -44,17 +45,19 @@ export async function PUT(
         return new NextResponse(JSON.stringify({ message: 'Gagal memperbarui donasi' }), { status: 500 });
     }
 }
+
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     const session = await auth();
 
     if (!session?.user?.id) {
         return new NextResponse(JSON.stringify({ message: 'Unauthorized' }), { status: 401 });
     }
+    const { id } = await params;
+    const donationId = parseInt(id, 10);
 
-    const donationId = parseInt(params.id, 10);
     if (isNaN(donationId)) {
         return new NextResponse(JSON.stringify({ message: 'Invalid donation ID' }), { status: 400 });
     }

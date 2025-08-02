@@ -1,22 +1,27 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-// import { User } from '@prisma/client'; // <-- 1. Impor tipe dari Prisma
-
-// Definisikan tipe gabungan untuk hasil query donasi dengan data user
 type DonationWithUser = {
   id: number;
-  userId: number;
+  userId: string; 
   foodType: string;
-  quantity: number;
+  quantity: string; 
   createdAt: Date;
   user: {
     name: string | null;
   };
 };
 
+type User = {
+    name: string | null;
+    createdAt: Date;
+}
+
+type Product = {
+    createdAt: Date;
+}
+
 export async function GET() {
   try {
-    // 1. Ambil Statistik Utama
     const totalDonations = await prisma.donation.count();
     const totalProducts = await prisma.product.count();
     const totalUsers = await prisma.user.count();
@@ -27,28 +32,24 @@ export async function GET() {
       },
     });
     const totalRevenue = productPriceSum._sum.price || 0;
-
-    // 2. Ambil Aktivitas Terbaru
     const recentDonations: DonationWithUser[] = await prisma.donation.findMany({
       take: 5,
       orderBy: { createdAt: 'desc' },
       include: { user: { select: { name: true } } },
     });
 
-    const recentUsers = await prisma.user.findMany({
+    const recentUsers: User[] = await prisma.user.findMany({
       take: 5,
       orderBy: { createdAt: 'desc' },
     });
-
-    // Format aktivitas agar seragam
-    const formattedDonations = recentDonations.map((d: DonationWithUser) => ({ // <-- 2. Tambahkan tipe di sini
+    const formattedDonations = recentDonations.map((d) => ({
       type: 'donation',
       user: d.user.name || 'Pengguna',
       item: `${d.foodType} (${d.quantity})`,
       time: d.createdAt.toISOString(),
     }));
 
-    const formattedUsers = recentUsers.map((u: { name: string | null; createdAt: Date }) => ({ // <-- 3. Tambahkan tipe di sini
+    const formattedUsers = recentUsers.map((u) => ({
       type: 'user',
       user: u.name || 'Pengguna baru',
       item: 'mendaftar',
@@ -58,17 +59,15 @@ export async function GET() {
     const recentActivities = [...formattedDonations, ...formattedUsers]
       .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
       .slice(0, 5);
-
-    // 3. Siapkan Data untuk Chart
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-    const donationsForChart = await prisma.donation.findMany({
+    const donationsForChart: { createdAt: Date }[] = await prisma.donation.findMany({
       where: { createdAt: { gte: sixMonthsAgo } },
       select: { createdAt: true },
     });
 
-    const productsForChart = await prisma.product.findMany({
+    const productsForChart: Product[] = await prisma.product.findMany({
         where: { createdAt: { gte: sixMonthsAgo } },
         select: { createdAt: true },
     });
@@ -84,13 +83,13 @@ export async function GET() {
         };
     }).reverse();
 
-    donationsForChart.forEach((d: { createdAt: Date }) => { // <-- 4. Tambahkan tipe di sini
+    donationsForChart.forEach((d) => {
         const month = monthNames[new Date(d.createdAt).getMonth()];
         const monthData = chartData.find(m => m.month === month);
         if (monthData) monthData.donations++;
     });
 
-    productsForChart.forEach((p: { createdAt: Date }) => { // <-- 5. Tambahkan tipe di sini
+    productsForChart.forEach((p) => {
         const month = monthNames[new Date(p.createdAt).getMonth()];
         const monthData = chartData.find(m => m.month === month);
         if (monthData) monthData.products++;

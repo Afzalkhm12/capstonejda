@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, Suspense } from 'react'; 
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import { toast } from "sonner";
 import Link from 'next/link';
 import AuthLayout from '@/components/AuthLayout';
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -34,7 +34,7 @@ export default function LoginPage() {
         });
       }
     } catch (error) {
-      console.error("Login Error:", error); // Variabel 'error' digunakan
+      console.error("Login Error:", error);
       toast.error("Terjadi Kesalahan", {
         description: "Tidak dapat terhubung ke server.",
       });
@@ -94,5 +94,12 @@ export default function LoginPage() {
         </p>
       </div>
     </AuthLayout>
+  );
+}
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

@@ -1,16 +1,22 @@
-import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma'; // Menggunakan Prisma untuk akses database
-
-/**
- * Mengambil satu produk berdasarkan ID.
- */
+import { NextResponse, NextRequest } from 'next/server';
+import prisma from '@/lib/prisma';
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params; 
+    const productId = parseInt(id, 10);
+
+    if (isNaN(productId)) {
+      return new NextResponse(
+        JSON.stringify({ message: "Invalid product ID" }),
+        { status: 400 }
+      );
+    }
+
     const product = await prisma.product.findUnique({
-      where: { id: parseInt(params.id, 10) },
+      where: { id: productId },
     });
 
     if (!product) {
@@ -21,7 +27,7 @@ export async function GET(
     }
     return NextResponse.json(product);
   } catch (error) {
-    console.error(`Gagal mengambil produk ${params.id}:`, error);
+    console.error(`Gagal mengambil produk:`, error);
     return new NextResponse(
       JSON.stringify({ message: "Gagal mengambil produk" }),
       { status: 500 }
@@ -29,18 +35,24 @@ export async function GET(
   }
 }
 
-/**
- * Mengubah (update) produk berdasarkan ID.
- * Catatan: Rute ini harus dilindungi agar hanya bisa diakses oleh admin.
- */
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params; 
+    const productId = parseInt(id, 10);
+
+    if (isNaN(productId)) {
+      return new NextResponse(
+        JSON.stringify({ message: "Invalid product ID" }),
+        { status: 400 }
+      );
+    }
+
     const data = await request.json();
     const updatedProduct = await prisma.product.update({
-      where: { id: parseInt(params.id, 10) },
+      where: { id: productId },
       data: {
         name: data.name,
         price: parseFloat(data.price),
@@ -50,30 +62,35 @@ export async function PUT(
     });
     return NextResponse.json(updatedProduct);
   } catch (error) {
-    console.error(`Gagal memperbarui produk ${params.id}:`, error);
+    console.error(`Gagal memperbarui produk:`, error);
     return new NextResponse(
       JSON.stringify({ message: "Gagal memperbarui produk" }),
       { status: 500 }
     );
   }
 }
-
-/**
- * Menghapus produk berdasarkan ID.
- * Catatan: Rute ini harus dilindungi agar hanya bisa diakses oleh admin.
- */
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params; 
+    const productId = parseInt(id, 10);
+
+    if (isNaN(productId)) {
+      return new NextResponse(
+        JSON.stringify({ message: "Invalid product ID" }),
+        { status: 400 }
+      );
+    }
+
     await prisma.product.delete({
-      where: { id: parseInt(params.id, 10) },
+      where: { id: productId },
     });
-    // Respon 204 No Content adalah standar untuk DELETE yang berhasil
+    
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error(`Gagal menghapus produk ${params.id}:`, error);
+    console.error(`Gagal menghapus produk:`, error);
     return new NextResponse(
       JSON.stringify({ message: "Gagal menghapus produk" }),
       { status: 500 }

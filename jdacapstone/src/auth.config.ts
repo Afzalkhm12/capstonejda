@@ -1,5 +1,5 @@
 import type { NextAuthConfig } from 'next-auth';
-import { User } from 'next-auth'; // Impor tipe User
+import { User } from 'next-auth'; 
 
 export const authConfig = {
   pages: {
@@ -22,7 +22,7 @@ export const authConfig = {
       if (isProtectedRoute) {
         if (!isLoggedIn) return false;
         if (isAdminRoute && userRole !== 'admin') {
-          return Response.redirect(new URL('/', nextUrl));
+          return Response.redirect(new URL('/admin/dashboard', nextUrl));
         }
       }
       return true;

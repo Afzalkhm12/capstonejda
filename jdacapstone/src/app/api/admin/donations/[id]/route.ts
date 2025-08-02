@@ -1,11 +1,12 @@
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
-import { auth } from "@/lib/auth"; 
+import { auth } from "@/lib/auth";
+
 export const runtime = 'nodejs'; 
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (session?.user?.role !== 'admin') {
@@ -14,7 +15,8 @@ export async function PATCH(
 
   try {
     const { status } = await request.json();
-    const donationId = parseInt(params.id, 10);
+    const { id } = await params;
+    const donationId = parseInt(id, 10);
 
     if (isNaN(donationId)) {
         return new NextResponse(JSON.stringify({ message: 'Invalid donation ID' }), { status: 400 });
