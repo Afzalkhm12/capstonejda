@@ -17,8 +17,8 @@ export const GET = auth(async (req) => {
       include: { user: { select: { name: true, email: true } } },
     });
     return NextResponse.json(donations);
-  } catch (error) {
-    console.error("Gagal mengambil data donasi:", error);
+  } catch {
+    console.error("Gagal mengambil data donasi");
     return new NextResponse(JSON.stringify({ message: "Gagal mengambil data donasi" }), { status: 500 });
   }
 });
