@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { usePathname, useRouter } from 'next/navigation'; 
+import { usePathname } from 'next/navigation'; 
 import { Button } from './ui/button';
 import {
   DropdownMenu,
@@ -18,17 +18,14 @@ import {
 export default function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { data: session, status } = useSession();
-    const router = useRouter();
     const pathname = usePathname();
 
-    useEffect(() => {
-        if (status === 'authenticated' && session?.user?.role === 'admin' && !pathname.startsWith('/admin')) {
-            router.push('/admin/dashboard');
-        }
-    }, [status, session, pathname, router]);
-
-
     const closeMenu = () => setIsMenuOpen(false);
+    
+    // Jangan render navbar di rute admin
+    if (pathname.startsWith('/admin')) {
+      return null;
+    }
 
     return (
         <nav className="navbar glass-nav">
@@ -44,7 +41,6 @@ export default function Navbar() {
                     <li><Link href="/about" className="nav-link" onClick={closeMenu}>About</Link></li>
                     <li><Link href="/donate" className="nav-link" onClick={closeMenu}>Donate Food</Link></li>
                     <li><Link href="/products" className="nav-link" onClick={closeMenu}>Products</Link></li>
-                    <li><Link href="/profile" className="nav-link" onClick={closeMenu}>Profile</Link></li>
                     <li><Link href="/contact" className="nav-link" onClick={closeMenu}>Contact</Link></li>
                 </ul>
 
@@ -71,9 +67,6 @@ export default function Navbar() {
                                     </div>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                {session.user.role === 'admin' && (
-                                   <DropdownMenuItem asChild><Link href="/admin/dashboard">Dashboard</Link></DropdownMenuItem>
-                                )}
                                 <DropdownMenuItem asChild><Link href="/profile">Profile</Link></DropdownMenuItem>
                                 <DropdownMenuItem asChild><Link href="/my-donations">My Donations</Link></DropdownMenuItem>
                                 <DropdownMenuSeparator />

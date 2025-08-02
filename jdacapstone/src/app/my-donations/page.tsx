@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,6 +26,8 @@ export default function MyDonationsPage() {
           setDonations(data);
           setIsLoading(false);
         });
+    } else if (status === 'unauthenticated') {
+      setIsLoading(false);
     }
   }, [status]);
 

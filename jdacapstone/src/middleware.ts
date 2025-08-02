@@ -8,6 +8,7 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const userRole = req.auth?.user?.role;
 
+  const isAuthRoute = nextUrl.pathname.startsWith('/login') || nextUrl.pathname.startsWith('/register');
   const isProtectedUserRoute = 
     nextUrl.pathname.startsWith('/profile') ||
     nextUrl.pathname.startsWith('/my-donations') ||
@@ -15,17 +16,22 @@ export default auth((req) => {
   
   const isAdminRoute = nextUrl.pathname.startsWith('/admin');
   
-  // Jika mencoba mengakses rute admin
-  if (isAdminRoute) {
-    if (!isLoggedIn || userRole !== 'admin') {
-      // Arahkan ke halaman utama jika bukan admin
-      return Response.redirect(new URL('/', nextUrl));
-    }
-    // Jika admin, izinkan akses
-    return;
+  // Jika admin sudah login dan mencoba mengakses halaman login/register, arahkan ke dashboard
+  if (isLoggedIn && userRole === 'admin' && isAuthRoute) {
+    return Response.redirect(new URL('/admin/dashboard', nextUrl));
   }
   
-  // Jika mencoba mengakses rute pengguna yang dilindungi
+  // Jika pengguna biasa sudah login dan mencoba mengakses halaman login/register, arahkan ke halaman utama
+  if (isLoggedIn && userRole !== 'admin' && isAuthRoute) {
+    return Response.redirect(new URL('/', nextUrl));
+  }
+
+  // Jika mencoba mengakses rute admin tanpa hak akses, arahkan ke halaman utama
+  if (isAdminRoute && (!isLoggedIn || userRole !== 'admin')) {
+    return Response.redirect(new URL('/', nextUrl));
+  }
+  
+  // Jika mencoba mengakses rute pengguna yang dilindungi tanpa login, arahkan ke halaman login
   if (isProtectedUserRoute && !isLoggedIn) {
      const loginUrl = new URL("/login", nextUrl.origin);
      loginUrl.searchParams.set("callbackUrl", nextUrl.pathname);
@@ -37,11 +43,12 @@ export default auth((req) => {
 });
 
 export const config = {
-  // Middleware akan berjalan di rute-rute ini
   matcher: [
     "/profile",
     "/my-donations",
     "/donate",
     "/admin/:path*",
+    "/login",
+    "/register",
   ],
 };

@@ -2,11 +2,10 @@ import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import NextAuth from 'next-auth';
 import { authConfig } from "@/lib/auth";
+export const runtime = 'nodejs'; 
 
 const { auth } = NextAuth(authConfig);
-
-// Handler untuk PATCH (Update)
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+async function handlePatch(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await auth(); 
   if (session?.user?.role !== 'admin') {
     return new NextResponse(JSON.stringify({ message: 'Unauthorized' }), { status: 401 });
@@ -31,3 +30,4 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return new NextResponse(JSON.stringify({ message: "Gagal memperbarui status donasi" }), { status: 500 });
   }
 }
+export { handlePatch as PATCH };

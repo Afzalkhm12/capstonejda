@@ -3,13 +3,13 @@ import prisma from '@/lib/prisma';
 import crypto from 'crypto';
 import { sendPasswordResetEmail } from '@/lib/mail';
 
+export const runtime = 'nodejs';
+
 export async function POST(request: Request) {
   try {
     const { email } = await request.json();
     const user = await prisma.user.findUnique({ where: { email } });
 
-    // Jangan beritahu jika user tidak ada untuk alasan keamanan,
-    // cukup kirim respons sukses palsu.
     if (user) {
       const token = crypto.randomBytes(32).toString('hex');
       const oneHour = 60 * 60 * 1000;

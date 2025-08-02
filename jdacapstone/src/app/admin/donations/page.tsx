@@ -1,4 +1,3 @@
-// src/app/admin/donations/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Loader2 } from "lucide-react";
 import { toast } from 'sonner';
 
-// Tipe data untuk donasi
 interface Donation {
   id: number;
   foodType: string;
@@ -36,7 +34,8 @@ export default function AdminDonationsPage() {
         const data = await res.json();
         setDonations(data);
       }
-    } catch (error) {
+    } catch (err) { 
+      console.error('Gagal memuat data donasi:', err);
       toast.error('Gagal memuat data donasi.');
     } finally {
       setIsLoading(false);
@@ -60,7 +59,7 @@ export default function AdminDonationsPage() {
     toast.promise(promise, {
       loading: 'Memperbarui status...',
       success: () => {
-        fetchDonations(); // Muat ulang data setelah berhasil
+        fetchDonations(); 
         return 'Status berhasil diperbarui!';
       },
       error: (err) => err.message,

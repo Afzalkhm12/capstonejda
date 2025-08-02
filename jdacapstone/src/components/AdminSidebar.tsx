@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Package, UtensilsCrossed, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { signOut } from 'next-auth/react';
 
 const navItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -15,9 +16,9 @@ export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 border-r bg-gray-50 dark:bg-gray-900/50">
+    <aside className="lg:flex flex-col w-64 border-r bg-gray-50 dark:bg-gray-900/50 min-h-screen">
       <div className="p-4 border-b">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/admin/dashboard" className="flex items-center gap-2">
             <h2 className="text-2xl font-bold text-primary">🌱 GreenGive</h2>
         </Link>
       </div>
@@ -37,13 +38,13 @@ export function AdminSidebar() {
         ))}
       </nav>
       <div className="p-4 border-t">
-         <Link
-            href="/"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-600 dark:text-gray-300 transition-all hover:bg-gray-200 dark:hover:bg-gray-800 hover:text-primary"
+         <button
+            onClick={() => signOut({ callbackUrl: '/' })}
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-600 dark:text-gray-300 transition-all hover:bg-gray-200 dark:hover:bg-gray-800 hover:text-primary w-full"
           >
             <LogOut className="h-5 w-5" />
-            Kembali ke Situs
-          </Link>
+            Keluar
+          </button>
       </div>
     </aside>
   );

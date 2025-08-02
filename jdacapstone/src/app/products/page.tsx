@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import Image from 'next/image';
+import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
 
 interface Product {
     id: number;
@@ -16,12 +15,13 @@ interface Product {
     image: string;
 }
 
-export default function AdminProductsPage() {
+const isValidImageUrl = (url: string) => {
+    return url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/'));
+};
+
+export default function ProductsPage() {
     const [products, setProducts] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
-    const [currentProduct, setCurrentProduct] = useState<Partial<Product>>({});
 
     async function fetchProducts() {
         setIsLoading(true);
@@ -33,8 +33,8 @@ export default function AdminProductsPage() {
             } else {
                 toast.error("Gagal memuat produk.");
             }
-        } catch (error) {
-            console.error("Terjadi kesalahan saat memuat produk:", error);
+        } catch (error) { 
+            console.error("Terjadi kesalahan:", error);
             toast.error("Terjadi kesalahan saat memuat produk.");
         } finally {
             setIsLoading(false);
@@ -45,119 +45,62 @@ export default function AdminProductsPage() {
         fetchProducts();
     }, []);
 
-    const handleOpenDialog = (product?: Product) => {
-        setIsEditing(!!product);
-        setCurrentProduct(product || { name: '', price: 0, category: 'Accessories', image: '' });
-        setIsDialogOpen(true);
-    };
-
-    const handleSubmit = async (e: FormEvent) => {
-        e.preventDefault();
-        const url = isEditing ? `/api/products/${currentProduct.id}` : '/api/products';
-        const method = isEditing ? 'PUT' : 'POST';
-
-        const promise = fetch(url, {
-            method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(currentProduct),
-        });
-
-        toast.promise(promise, {
-            loading: 'Menyimpan produk...',
-            success: () => {
-                fetchProducts();
-                setIsDialogOpen(false);
-                return `Produk berhasil ${isEditing ? 'diperbarui' : 'dibuat'}!`;
-            },
-            error: (err) => `Gagal menyimpan produk: ${err.message}`,
-        });
-    };
-
-    const handleDelete = async (id: number) => {
-        if (confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
-            const promise = fetch(`/api/products/${id}`, { method: 'DELETE' });
-            toast.promise(promise, {
-                loading: 'Menghapus produk...',
-                success: () => {
-                    fetchProducts();
-                    return 'Produk berhasil dihapus!';
-                },
-                error: (err) => `Gagal menghapus produk: ${err.message}`,
-            });
-        }
-    };
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-full min-h-[60vh]">
+                <div className="text-center">
+                    <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+                    <p className="mt-4 text-lg text-muted-foreground">Memuat Produk...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="container py-8">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Kelola Produk</h1>
-                <Button onClick={() => handleOpenDialog()}>Tambah Produk Baru</Button>
+        <div className="container py-12">
+            <header className="text-center mb-10">
+                <h1 className="text-4xl font-bold tracking-tight text-gradient">Produk Kami</h1>
+                <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
+                    Dukung misi kami dengan membeli merchandise ramah lingkungan. Setiap pembelian membantu upaya kami mengurangi limbah makanan.
+                </p>
+            </header>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {products.length > 0 ? (
+                    products.map((product) => {
+                        const imageUrl = isValidImageUrl(product.image) ? product.image : 'https://placehold.co/400x300/e8f5e8/1a3b1a?text=Gambar+Tidak+Tersedia';
+                        return (
+                            <Link href={`/products/${product.id}`} key={product.id}>
+                                {/* PERBAIKAN: Menambahkan class "glass-card" */}
+                                <Card className="glass-card overflow-hidden transition-transform transform hover:scale-105 hover:shadow-xl cursor-pointer h-full flex flex-col">
+                                    <CardHeader className="p-0">
+                                        <Image
+                                            src={imageUrl}
+                                            alt={product.name}
+                                            width={400}
+                                            height={300}
+                                            className="w-full h-60 object-cover"
+                                        />
+                                    </CardHeader>
+                                    <CardContent className="p-6 flex flex-col flex-grow">
+                                        <p className="text-sm text-muted-foreground mb-1">{product.category}</p>
+                                        <CardTitle className="text-xl font-semibold mb-3">{product.name}</CardTitle>
+                                        <div className="mt-auto">
+                                            <p className="text-lg font-bold text-primary">
+                                                Rp{product.price.toLocaleString('id-ID')}
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        );
+                    })
+                ) : (
+                    <div className="col-span-full text-center py-10">
+                        <p className="text-muted-foreground">Belum ada produk yang tersedia.</p>
+                    </div>
+                )}
             </div>
-            <div className="border rounded-lg">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Nama Produk</TableHead>
-                            <TableHead>Kategori</TableHead>
-                            <TableHead>Harga</TableHead>
-                            <TableHead className="text-right">Aksi</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading ? (
-                            <TableRow><TableCell colSpan={4} className="text-center h-24">Memuat...</TableCell></TableRow>
-                        ) : products.length > 0 ? (
-                            products.map((product) => (
-                                <TableRow key={product.id}>
-                                    <TableCell className="font-medium">{product.name}</TableCell>
-                                    <TableCell>{product.category}</TableCell>
-                                    <TableCell>Rp{product.price.toLocaleString('id-ID')}</TableCell>
-                                    <TableCell className="text-right space-x-2">
-                                        <Button variant="outline" size="sm" onClick={() => handleOpenDialog(product)}>Ubah</Button>
-                                        <Button variant="destructive" size="sm" onClick={() => handleDelete(product.id)}>Hapus</Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow><TableCell colSpan={4} className="text-center h-24">Belum ada produk.</TableCell></TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{isEditing ? 'Ubah Produk' : 'Tambah Produk Baru'}</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="name" className="text-right">Nama</Label>
-                            <Input id="name" name="name" value={currentProduct.name || ''} onChange={(e) => setCurrentProduct({...currentProduct, name: e.target.value})} className="col-span-3" required />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="price" className="text-right">Harga</Label>
-                            <Input id="price" name="price" type="number" value={currentProduct.price || ''} onChange={(e) => setCurrentProduct({...currentProduct, price: parseFloat(e.target.value)})} className="col-span-3" required />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="category" className="text-right">Kategori</Label>
-                            <select id="category" name="category" value={currentProduct.category || 'Accessories'} onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value})} className="col-span-3 flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm">
-                                <option value="Apparel">Apparel</option>
-                                <option value="Accessories">Accessories</option>
-                                <option value="Home & Garden">Home & Garden</option>
-                            </select>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="image" className="text-right">URL Gambar</Label>
-                            <Input id="image" name="image" value={currentProduct.image || ''} onChange={(e) => setCurrentProduct({...currentProduct, image: e.target.value})} className="col-span-3" required />
-                        </div>
-                        <DialogFooter>
-                            <DialogClose asChild><Button type="button" variant="outline">Batal</Button></DialogClose>
-                            <Button type="submit">Simpan</Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }
